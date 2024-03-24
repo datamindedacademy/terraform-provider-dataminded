@@ -1,4 +1,6 @@
 mod schema;
+use schema::{chapter_members, chapters, users};
+
 use axum::{
     extract::State,
     http::StatusCode,
@@ -8,7 +10,6 @@ use axum::{
 };
 use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use schema::users;
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -25,6 +26,18 @@ struct User {
 #[derive(serde::Deserialize, Insertable)]
 #[diesel(table_name = users)]
 struct NewUser {
+    name: String,
+}
+
+#[derive(serde::Serialize, Selectable, Queryable)]
+struct Chapter {
+    id: i32,
+    name: String,
+}
+
+#[derive(serde::Deserialize, Insertable)]
+#[diesel(table_name = chapters)]
+struct NewChapter {
     name: String,
 }
 
