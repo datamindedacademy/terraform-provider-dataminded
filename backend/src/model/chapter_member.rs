@@ -2,15 +2,15 @@ use crate::schema::chapter_members;
 use diesel::prelude::*;
 
 #[derive(serde::Serialize, Selectable, Queryable)]
-struct ChapterMember {
+pub struct ChapterMember {
     pub id: i32,
     pub chapter_id: i32,
     pub user_id: i32,
 }
 
-#[derive(serde::Deserialize, Insertable)]
+#[derive(serde::Deserialize, Insertable, Debug, AsChangeset)]
 #[diesel(table_name = chapter_members)]
-struct NewChapterMember {
+pub struct NewChapterMember {
     pub chapter_id: i32,
     pub user_id: i32,
 }
