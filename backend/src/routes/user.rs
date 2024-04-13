@@ -1,3 +1,4 @@
+use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::{get, post};
@@ -14,10 +15,12 @@ use error::internal_error;
 
 pub fn user_routes() -> Router<Pool<ConnectionManager<SqliteConnection>>> {
     Router::new()
-        .route("/user/list", get(list_users))
-        .route("/user/create", post(create_user))
-    // .route("/user/update", post(update_user))
-    // .route("/user/delete", post(delete_user))
+        .route("/list", get(list_users))
+        .route("/create", post(create_user))
+        .route(
+            "/:id",
+            get(get_one_user).put(update_user).delete(delete_user),
+        )
 }
 
 async fn create_user(
@@ -41,6 +44,44 @@ async fn list_users(
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| users::table.select(User::as_select()).load(conn))
+        .map_err(internal_error)?;
+    Ok(Json(res))
+}
+
+async fn delete_user(
+    State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
+    Json(id): Json<i32>,
+) -> Result<Json<usize>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(internal_error)?;
+    let res = conn
+        .transaction(|conn| diesel::delete(users::table.filter(users::id.eq(id))).execute(conn))
+        .map_err(internal_error)?;
+    Ok(Json(res))
+}
+
+async fn update_user(
+    State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
+    Path(id): Path<i32>,
+    Json(new_user): Json<NewUser>,
+) -> Result<Json<usize>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(internal_error)?;
+    let res = conn
+        .transaction(|conn| {
+            diesel::update(users::table.find(id))
+                .set(new_user)
+                .execute(conn)
+        })
+        .map_err(internal_error)?;
+    Ok(Json(res))
+}
+
+async fn get_one_user(
+    State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
+    Path(id): Path<i32>,
+) -> Result<Json<User>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(internal_error)?;
+    let res = conn
+        .transaction(|conn| users::table.find(id).first(conn))
         .map_err(internal_error)?;
     Ok(Json(res))
 }

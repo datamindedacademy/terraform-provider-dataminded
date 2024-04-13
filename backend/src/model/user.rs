@@ -1,14 +1,15 @@
 use crate::schema::users;
 use diesel::prelude::*;
+use serde::Deserialize;
 
-#[derive(serde::Serialize, Selectable, Queryable)]
+#[derive(serde::Serialize, Deserialize, Selectable, Queryable, AsChangeset)]
 pub struct User {
-    id: i32,
-    name: String,
+    pub id: i32,
+    pub name: String,
 }
 
-#[derive(serde::Deserialize, Insertable)]
+#[derive(serde::Deserialize, Insertable, AsChangeset)]
 #[diesel(table_name = users)]
 pub struct NewUser {
-    name: String,
+    pub name: String,
 }

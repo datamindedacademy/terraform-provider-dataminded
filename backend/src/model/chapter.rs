@@ -3,12 +3,12 @@ use diesel::prelude::*;
 
 #[derive(serde::Serialize, Selectable, Queryable)]
 pub struct Chapter {
-    id: i32,
-    name: String,
+    pub id: i32,
+    pub name: String,
 }
 
 #[derive(serde::Deserialize, Insertable)]
 #[diesel(table_name = chapters)]
 pub struct NewChapter {
-    name: String,
+    pub name: String,
 }
