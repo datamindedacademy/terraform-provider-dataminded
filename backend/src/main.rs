@@ -8,6 +8,8 @@ use diesel::prelude::*;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+use crate::routes::chapter::chapter_routes;
 // normally part of your generated schema.rs file
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
@@ -38,7 +40,10 @@ async fn main() {
     }
 
     // build our application with some routes
-    let app = Router::new().nest("/user", user_routes()).with_state(pool);
+    let app = Router::new()
+        .nest("/user", user_routes())
+        .nest("/chapter", chapter_routes())
+        .with_state(pool);
 
     // run it with hyper
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

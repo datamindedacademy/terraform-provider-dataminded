@@ -7,11 +7,9 @@ use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::SqliteConnection;
 
-#[path = "../error.rs"]
-mod error;
+use super::error::internal_error;
 use crate::model::user::{NewUser, User};
 use crate::schema::users;
-use error::internal_error;
 
 pub fn user_routes() -> Router<Pool<ConnectionManager<SqliteConnection>>> {
     Router::new()
