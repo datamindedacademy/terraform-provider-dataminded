@@ -18,6 +18,7 @@ table! {
     chapter_members (chapter_id, user_id) {
         chapter_id -> Integer,
         user_id -> Integer,
+        role -> Nullable<Text>,
     }
 }
 

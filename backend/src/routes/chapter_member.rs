@@ -1,4 +1,3 @@
-use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::{get, post};
@@ -17,7 +16,9 @@ pub fn chapter_member_routes() -> Router<Pool<ConnectionManager<SqliteConnection
         .route("/create", post(create_chapter_member))
         .route(
             "/:id",
-            get(get_one_chapter_member).delete(delete_chapter_member),
+            get(get_one_chapter_member)
+                .put(update_chapter_member)
+                .delete(delete_chapter_member),
         )
 }
 
@@ -52,15 +53,42 @@ async fn list_chapter_members(
     Ok(Json(res))
 }
 
-async fn delete_chapter_member(
+async fn update_chapter_member(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
-    Path(id): Path<i32>,
+    Json(chapter_member): Json<ChapterMember>,
 ) -> Result<Json<usize>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
-            diesel::delete(chapter_members::table.filter(chapter_members::chapter_id.eq(id)))
-                .execute(conn)
+            diesel::update(
+                chapter_members::table.filter(
+                    chapter_members::chapter_id
+                        .eq(chapter_member.chapter_id)
+                        .and(chapter_members::user_id.eq(chapter_member.user_id)),
+                ),
+            )
+            .set(chapter_member)
+            .execute(conn)
+        })
+        .map_err(internal_error)?;
+    Ok(Json(res))
+}
+
+async fn delete_chapter_member(
+    State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
+    Json(chapter_member): Json<ChapterMember>,
+) -> Result<Json<usize>, (StatusCode, String)> {
+    let mut conn = pool.get().map_err(internal_error)?;
+    let res = conn
+        .transaction(|conn| {
+            diesel::delete(
+                chapter_members::table.filter(
+                    chapter_members::chapter_id
+                        .eq(chapter_member.chapter_id)
+                        .and(chapter_members::user_id.eq(chapter_member.user_id)),
+                ),
+            )
+            .execute(conn)
         })
         .map_err(internal_error)?;
     Ok(Json(res))
@@ -68,13 +96,17 @@ async fn delete_chapter_member(
 
 async fn get_one_chapter_member(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
-    Path(id): Path<i32>,
+    Json(chapter_member): Json<ChapterMember>,
 ) -> Result<Json<ChapterMember>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
             chapter_members::table
-                .filter(chapter_members::chapter_id.eq(id))
+                .filter(
+                    chapter_members::chapter_id
+                        .eq(chapter_member.chapter_id)
+                        .and(chapter_members::user_id.eq(chapter_member.user_id)),
+                )
                 .select(ChapterMember::as_select())
                 .first(conn)
         })
