@@ -6,5 +6,6 @@ pub fn internal_error<E>(err: E) -> (StatusCode, String)
 where
     E: std::error::Error,
 {
+    tracing::error!("Internal server error: {}", err);
     (StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
 }

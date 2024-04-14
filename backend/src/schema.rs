@@ -15,8 +15,7 @@ table! {
 }
 
 table! {
-    chapter_members (id) {
-        id -> Integer,
+    chapter_members (chapter_id, user_id) {
         chapter_id -> Integer,
         user_id -> Integer,
     }

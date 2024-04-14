@@ -4,7 +4,7 @@ mod schema;
 use routes::user::user_routes;
 
 use axum::Router;
-use diesel::prelude::*;
+use diesel::{connection::SimpleConnection, prelude::*};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -37,6 +37,8 @@ async fn main() {
         let mut conn = pool.get().unwrap();
         conn.transaction(|conn| conn.run_pending_migrations(MIGRATIONS).map(|_| ()))
             .unwrap();
+        // enforce foreign key constraints
+        conn.batch_execute("PRAGMA foreign_keys = ON").unwrap();
     }
 
     // build our application with some routes
