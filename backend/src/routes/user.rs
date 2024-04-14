@@ -1,7 +1,7 @@
 use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::routing::{get, post};
+use axum::routing::get;
 use axum::{Json, Router};
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
@@ -13,8 +13,7 @@ use crate::schema::users;
 
 pub fn user_routes() -> Router<Pool<ConnectionManager<SqliteConnection>>> {
     Router::new()
-        .route("/list", get(list_users))
-        .route("/create", post(create_user))
+        .route("/", get(list_users).post(create_user))
         .route(
             "/:id",
             get(get_one_user).put(update_user).delete(delete_user),
@@ -24,7 +23,7 @@ pub fn user_routes() -> Router<Pool<ConnectionManager<SqliteConnection>>> {
 async fn create_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Json(new_user): Json<NewUser>,
-) -> Result<Json<usize>, (StatusCode, String)> {
+) -> Result<Json<User>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(internal_error)?;
 
     tracing::info!("Creating user: {:?}", new_user);
@@ -32,7 +31,7 @@ async fn create_user(
         .transaction(|conn| {
             diesel::insert_into(users::table)
                 .values(new_user)
-                .execute(conn)
+                .get_result(conn)
         })
         .map_err(internal_error)?;
     Ok(Json(res))
@@ -52,11 +51,11 @@ async fn list_users(
 async fn delete_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
-) -> Result<Json<usize>, (StatusCode, String)> {
+) -> Result<Json<User>, (StatusCode, String)> {
     let mut conn = pool.get().map_err(internal_error)?;
     tracing::info!("Deleting user: {:?}", id);
     let res = conn
-        .transaction(|conn| diesel::delete(users::table.filter(users::id.eq(id))).execute(conn))
+        .transaction(|conn| diesel::delete(users::table.filter(users::id.eq(id))).get_result(conn))
         .map_err(internal_error)?;
     Ok(Json(res))
 }
@@ -65,14 +64,14 @@ async fn update_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
     Json(new_user): Json<NewUser>,
-) -> Result<Json<usize>, (StatusCode, String)> {
+) -> Result<Json<User>, (StatusCode, String)> {
     tracing::info!("Updating user: {:?}", new_user);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
             diesel::update(users::table.find(id))
                 .set(new_user)
-                .execute(conn)
+                .get_result(conn)
         })
         .map_err(internal_error)?;
     Ok(Json(res))

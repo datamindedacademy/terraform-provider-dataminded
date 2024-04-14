@@ -9,7 +9,7 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::routes::{chapter::chapter_routes, chapter_member::chapter_member_routes};
+use crate::routes::chapter::chapter_routes;
 // normally part of your generated schema.rs file
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
@@ -45,7 +45,6 @@ async fn main() {
     let app = Router::new()
         .nest("/user", user_routes())
         .nest("/chapter", chapter_routes())
-        .nest("/chapter/member", chapter_member_routes())
         .with_state(pool);
 
     // run it with hyper

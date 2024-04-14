@@ -22,3 +22,9 @@ pub struct ChapterMember {
     pub user_id: i32,
     pub role: Option<String>,
 }
+
+#[derive(serde::Deserialize, AsChangeset, Debug)]
+#[diesel(table_name = chapter_members)]
+pub struct NewChapterMember {
+    pub role: Option<String>,
+}
