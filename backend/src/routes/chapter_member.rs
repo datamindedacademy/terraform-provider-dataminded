@@ -25,7 +25,12 @@ async fn create_chapter_member(
     Path((chapter_id, user_id)): Path<(i32, i32)>,
     Json(new_chapter_member): Json<NewChapterMember>,
 ) -> Result<Json<ChapterMember>, (StatusCode, String)> {
-    tracing::info!("Creating chapter member: {:?}", new_chapter_member);
+    tracing::info!(
+        "Registering user {:?} as member in chapter {:?} with role {:?}",
+        user_id,
+        chapter_id,
+        new_chapter_member.role
+    );
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
@@ -67,7 +72,12 @@ async fn update_chapter_member(
     Path((chapter_id, user_id)): Path<(i32, i32)>,
     Json(chapter_member): Json<NewChapterMember>,
 ) -> Result<Json<ChapterMember>, (StatusCode, String)> {
-    tracing::info!("Updating chapter member: {:?}", (chapter_id, user_id));
+    tracing::info!(
+        "Channging member {:?} of chapter {:?} to role {:?}",
+        user_id,
+        chapter_id,
+        chapter_member.role
+    );
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
@@ -89,7 +99,11 @@ async fn delete_chapter_member(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path((chapter_id, user_id)): Path<(i32, i32)>,
 ) -> Result<Json<ChapterMember>, (StatusCode, String)> {
-    tracing::info!("Deleting chapter member: {:?}", (chapter_id, user_id));
+    tracing::info!(
+        "Deleting user {:?} as member of chapter {:?}",
+        user_id,
+        chapter_id
+    );
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
@@ -110,7 +124,11 @@ async fn get_one_chapter_member(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path((chapter_id, user_id)): Path<(i32, i32)>,
 ) -> Result<Json<ChapterMember>, (StatusCode, String)> {
-    tracing::info!("Getting chapter member: {:?}", (chapter_id, user_id));
+    tracing::info!(
+        "Getting user {:?} as member of chapter {:?}",
+        user_id,
+        chapter_id
+    );
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {

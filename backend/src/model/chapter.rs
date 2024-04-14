@@ -7,7 +7,7 @@ pub struct Chapter {
     pub name: String,
 }
 
-#[derive(serde::Deserialize, Insertable, AsChangeset)]
+#[derive(serde::Deserialize, Insertable, AsChangeset, Debug)]
 #[diesel(table_name = chapters)]
 pub struct NewChapter {
     pub name: String,

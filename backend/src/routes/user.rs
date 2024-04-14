@@ -24,9 +24,8 @@ async fn create_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Json(new_user): Json<NewUser>,
 ) -> Result<Json<User>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(internal_error)?;
-
     tracing::info!("Creating user: {:?}", new_user);
+    let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
             diesel::insert_into(users::table)
@@ -40,8 +39,8 @@ async fn create_user(
 async fn list_users(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
 ) -> Result<Json<Vec<User>>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(internal_error)?;
     tracing::info!("Listing users");
+    let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| users::table.select(User::as_select()).load(conn))
         .map_err(internal_error)?;
@@ -52,8 +51,8 @@ async fn delete_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
 ) -> Result<Json<User>, (StatusCode, String)> {
-    let mut conn = pool.get().map_err(internal_error)?;
     tracing::info!("Deleting user: {:?}", id);
+    let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| diesel::delete(users::table.filter(users::id.eq(id))).get_result(conn))
         .map_err(internal_error)?;
@@ -65,7 +64,7 @@ async fn update_user(
     Path(id): Path<i32>,
     Json(new_user): Json<NewUser>,
 ) -> Result<Json<User>, (StatusCode, String)> {
-    tracing::info!("Updating user: {:?}", new_user);
+    tracing::info!("Updating user {:?} to {:?}", id, new_user);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
@@ -81,7 +80,7 @@ async fn get_one_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
 ) -> Result<Json<User>, (StatusCode, String)> {
-    tracing::info!("Getting user: {:?}", id);
+    tracing::info!("Getting user {:?}", id);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| users::table.find(id).first(conn))

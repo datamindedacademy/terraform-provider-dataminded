@@ -30,6 +30,7 @@ async fn create_chapter(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Json(new_chapter): Json<NewChapter>,
 ) -> Result<Json<Chapter>, (StatusCode, String)> {
+    tracing::info!("Creating chapter: {:?}", new_chapter);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
@@ -44,6 +45,7 @@ async fn create_chapter(
 async fn list_chapters(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
 ) -> Result<Json<Vec<Chapter>>, (StatusCode, String)> {
+    tracing::info!("Listing chapters");
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| chapters::table.select(Chapter::as_select()).load(conn))
@@ -55,6 +57,7 @@ async fn delete_chapter(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
 ) -> Result<Json<Chapter>, (StatusCode, String)> {
+    tracing::info!("Deleting chapter {:?}", id);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
@@ -69,6 +72,7 @@ async fn update_chapter(
     Path(id): Path<i32>,
     Json(new_chapter): Json<NewChapter>,
 ) -> Result<Json<Chapter>, (StatusCode, String)> {
+    tracing::info!("Updating chapter {:?} to {:?}", id, new_chapter);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
@@ -84,6 +88,7 @@ async fn get_one_chapter(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
 ) -> Result<Json<Chapter>, (StatusCode, String)> {
+    tracing::info!("Getting chapter {:?}", id);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
