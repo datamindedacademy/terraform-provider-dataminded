@@ -1,9 +1,14 @@
 mod model;
 mod routes;
 mod schema;
+use aide::{
+    axum::{routing::get, ApiRouter, IntoApiResponse},
+    openapi::{Info, OpenApi},
+    redoc::Redoc,
+};
 use routes::user::user_routes;
 
-use axum::Router;
+use axum::{Extension, Json, Router};
 use diesel::{connection::SimpleConnection, prelude::*};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use std::net::SocketAddr;
@@ -13,6 +18,10 @@ use crate::routes::chapter::chapter_routes;
 // normally part of your generated schema.rs file
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
+
+async fn serve_api(Extension(api): Extension<OpenApi>) -> impl IntoApiResponse {
+    Json(api)
+}
 
 #[tokio::main]
 async fn main() {
@@ -42,14 +51,33 @@ async fn main() {
     }
 
     // build our application with some routes
-    let app = Router::new()
+    let app = ApiRouter::new()
+        // generate redoc-ui using the openapi spec route
+        .route("/redoc", Redoc::new("/api.json").axum_route())
         .nest("/user", user_routes())
         .nest("/chapter", chapter_routes())
-        .with_state(pool);
+        .with_state(pool)
+        // We'll serve our generated document here.
+        .route("/api.json", get(serve_api));
+
+    let mut api = OpenApi {
+        info: Info {
+            description: Some("Data Minded example API".to_string()),
+            ..Info::default()
+        },
+        ..OpenApi::default()
+    };
 
     // run it with hyper
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     tracing::debug!("listening on {addr}");
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(
+        listener,
+        app.finish_api(&mut api)
+            .layer(Extension(api))
+            .into_make_service(),
+    )
+    .await
+    .unwrap();
 }

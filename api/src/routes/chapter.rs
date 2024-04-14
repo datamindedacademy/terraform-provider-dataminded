@@ -1,8 +1,10 @@
+use aide::axum::routing::get;
+use aide::axum::ApiRouter;
+use aide::axum::IntoApiResponse;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
-use axum::routing::get;
-use axum::{Json, Router};
+use axum::Json;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::SqliteConnection;
@@ -13,8 +15,8 @@ use super::error::internal_error;
 use crate::model::chapter::{Chapter, NewChapter};
 use crate::schema::chapters;
 
-pub fn chapter_routes() -> Router<Pool<ConnectionManager<SqliteConnection>>> {
-    Router::new()
+pub fn chapter_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
+    ApiRouter::new()
         .route("/", get(list_chapters).post(create_chapter))
         .route(
             "/:id",
@@ -29,7 +31,7 @@ pub fn chapter_routes() -> Router<Pool<ConnectionManager<SqliteConnection>>> {
 async fn create_chapter(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Json(new_chapter): Json<NewChapter>,
-) -> Result<Json<Chapter>, (StatusCode, String)> {
+) -> Result<impl IntoApiResponse, (StatusCode, String)> {
     tracing::info!("Creating chapter: {:?}", new_chapter);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
