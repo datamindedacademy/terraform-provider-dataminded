@@ -1,7 +1,8 @@
+use aide::axum::routing::get;
+use aide::axum::ApiRouter;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
-use axum::routing::get;
-use axum::{Json, Router};
+use axum::Json;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::SqliteConnection;
@@ -10,14 +11,16 @@ use super::error::internal_error;
 use crate::model::chapter_member::{ChapterMember, NewChapterMember};
 use crate::schema::chapter_members;
 
-pub fn chapter_member_routes() -> Router<Pool<ConnectionManager<SqliteConnection>>> {
-    Router::new().route("/", get(list_chapter_members)).route(
-        "/:user_id",
-        get(get_one_chapter_member)
-            .post(create_chapter_member)
-            .put(update_chapter_member)
-            .delete(delete_chapter_member),
-    )
+pub fn chapter_member_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
+    ApiRouter::new()
+        .api_route("/", get(list_chapter_members))
+        .api_route(
+            "/:user_id",
+            get(get_one_chapter_member)
+                .post(create_chapter_member)
+                .put(update_chapter_member)
+                .delete(delete_chapter_member),
+        )
 }
 
 async fn create_chapter_member(
