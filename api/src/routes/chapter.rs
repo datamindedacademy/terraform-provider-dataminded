@@ -1,6 +1,5 @@
 use aide::axum::routing::get;
 use aide::axum::ApiRouter;
-use aide::axum::IntoApiResponse;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
@@ -17,21 +16,21 @@ use crate::schema::chapters;
 
 pub fn chapter_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
     ApiRouter::new()
-        .route("/", get(list_chapters).post(create_chapter))
-        .route(
+        .api_route("/", get(list_chapters).post(create_chapter))
+        .api_route(
             "/:id",
             get(get_one_chapter)
                 .put(update_chapter)
                 .delete(delete_chapter),
         )
-        .route("/member", get(list_chapter_members))
+        .api_route("/member", get(list_chapter_members))
         .nest("/:id/member", chapter_member_routes())
 }
 
 async fn create_chapter(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Json(new_chapter): Json<NewChapter>,
-) -> Result<impl IntoApiResponse, (StatusCode, String)> {
+) -> Result<Json<Chapter>, (StatusCode, String)> {
     tracing::info!("Creating chapter: {:?}", new_chapter);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn

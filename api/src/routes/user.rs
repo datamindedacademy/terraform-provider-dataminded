@@ -1,6 +1,5 @@
 use aide::axum::routing::get;
 use aide::axum::ApiRouter;
-use aide::axum::IntoApiResponse;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
@@ -25,7 +24,7 @@ pub fn user_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
 async fn create_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Json(new_user): Json<NewUser>,
-) -> Result<impl IntoApiResponse, (StatusCode, String)> {
+) -> Result<Json<User>, (StatusCode, String)> {
     tracing::info!("Creating user: {:?}", new_user);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
@@ -40,7 +39,7 @@ async fn create_user(
 
 async fn list_users(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
-) -> Result<impl IntoApiResponse, (StatusCode, String)> {
+) -> Result<Json<Vec<User>>, (StatusCode, String)> {
     tracing::info!("Listing users");
     let mut conn = pool.get().map_err(internal_error)?;
     let res: Vec<User> = conn
@@ -52,7 +51,7 @@ async fn list_users(
 async fn delete_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
-) -> Result<impl IntoApiResponse, (StatusCode, String)> {
+) -> Result<Json<User>, (StatusCode, String)> {
     tracing::info!("Deleting user: {:?}", id);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
@@ -65,7 +64,7 @@ async fn update_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
     Json(new_user): Json<NewUser>,
-) -> Result<impl IntoApiResponse, (StatusCode, String)> {
+) -> Result<Json<User>, (StatusCode, String)> {
     tracing::info!("Updating user {:?} to {:?}", id, new_user);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
@@ -81,7 +80,7 @@ async fn update_user(
 async fn get_one_user(
     State(pool): State<diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>>,
     Path(id): Path<i32>,
-) -> Result<impl IntoApiResponse, (StatusCode, String)> {
+) -> Result<Json<User>, (StatusCode, String)> {
     tracing::info!("Getting user {:?}", id);
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn

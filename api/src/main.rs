@@ -8,7 +8,7 @@ use aide::{
 };
 use routes::user::user_routes;
 
-use axum::{Extension, Json, Router};
+use axum::{Extension, Json};
 use diesel::{connection::SimpleConnection, prelude::*};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use std::net::SocketAddr;

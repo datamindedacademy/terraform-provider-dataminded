@@ -2,6 +2,7 @@ use crate::model::chapter::Chapter;
 use crate::model::user::User;
 use crate::schema::chapter_members;
 use diesel::prelude::*;
+use schemars::JsonSchema;
 use serde::Deserialize;
 
 #[derive(
@@ -12,6 +13,7 @@ use serde::Deserialize;
     Insertable,
     AsChangeset,
     Queryable,
+    JsonSchema,
     Debug,
 )]
 #[diesel(belongs_to(Chapter))]
@@ -23,7 +25,7 @@ pub struct ChapterMember {
     pub role: Option<String>,
 }
 
-#[derive(serde::Deserialize, AsChangeset, Debug)]
+#[derive(serde::Deserialize, AsChangeset, JsonSchema, Debug)]
 #[diesel(table_name = chapter_members)]
 pub struct NewChapterMember {
     pub role: Option<String>,
