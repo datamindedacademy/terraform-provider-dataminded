@@ -29,7 +29,7 @@ pub fn user_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
             .post_with(create_user, |op| {
                 op.id("createUser")
                     .description("Create a new user")
-                    .response_with::<200, Json<User>, _>(|res| {
+                    .response_with::<201, Json<User>, _>(|res| {
                         res.description("The created user").example(User {
                             id: 1,
                             name: "Alice".to_string(),
@@ -62,7 +62,7 @@ pub fn user_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
             .delete_with(delete_user, |op| {
                 op.id("deleteUser")
                     .description("Delete a user by ID")
-                    .response_with::<200, Json<User>, _>(|res| {
+                    .response_with::<202, Json<User>, _>(|res| {
                         res.description("The deleted user").example(User {
                             id: 1,
                             name: "David".to_string(),

@@ -1,4 +1,4 @@
-use aide::axum::routing::get;
+use aide::axum::routing::get_with;
 use aide::axum::ApiRouter;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
@@ -13,13 +13,71 @@ use crate::schema::chapter_members;
 
 pub fn chapter_member_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
     ApiRouter::new()
-        .api_route("/", get(list_chapter_members))
+        .api_route(
+            "/",
+            get_with(list_chapter_members, |op| {
+                op.id("listChapterMembers")
+                    .description("List chapter members")
+                    .response_with::<200, Json<Vec<ChapterMember>>, _>(|res| {
+                        res.description("A list of chapter members")
+                            .example(vec![ChapterMember {
+                                chapter_id: 1,
+                                user_id: 1,
+                                role: Some("Contributor".to_string()),
+                            }])
+                    })
+            }),
+        )
         .api_route(
             "/:user_id",
-            get(get_one_chapter_member)
-                .post(create_chapter_member)
-                .put(update_chapter_member)
-                .delete(delete_chapter_member),
+            get_with(get_one_chapter_member, |op| {
+                op.id("getChapterMember")
+                    .description("Get a chapter member by ID")
+                    .response_with::<200, Json<ChapterMember>, _>(|res| {
+                        res.description("The requested chapter member")
+                            .example(ChapterMember {
+                                chapter_id: 1,
+                                user_id: 1,
+                                role: Some("Contributor".to_string()),
+                            })
+                    })
+            })
+            .post_with(create_chapter_member, |op| {
+                op.id("createChapterMember")
+                    .description("Create a new chapter member")
+                    .response_with::<201, Json<ChapterMember>, _>(|res| {
+                        res.description("The created chapter member")
+                            .example(ChapterMember {
+                                chapter_id: 1,
+                                user_id: 1,
+                                role: Some("Contributor".to_string()),
+                            })
+                    })
+            })
+            .put_with(update_chapter_member, |op| {
+                op.id("updateChapterMember")
+                    .description("Update a chapter member by ID")
+                    .response_with::<200, Json<ChapterMember>, _>(|res| {
+                        res.description("The updated chapter member")
+                            .example(ChapterMember {
+                                chapter_id: 1,
+                                user_id: 1,
+                                role: Some("Contributor".to_string()),
+                            })
+                    })
+            })
+            .delete_with(delete_chapter_member, |op| {
+                op.id("deleteChapterMember")
+                    .description("Delete a chapter member by ID")
+                    .response_with::<202, Json<ChapterMember>, _>(|res| {
+                        res.description("The deleted chapter member")
+                            .example(ChapterMember {
+                                chapter_id: 1,
+                                user_id: 1,
+                                role: Some("Contributor".to_string()),
+                            })
+                    })
+            }),
         )
 }
 
