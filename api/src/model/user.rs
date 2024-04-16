@@ -1,9 +1,19 @@
 use crate::schema::users;
+use aide::OperationIo;
 use diesel::prelude::*;
 use schemars::JsonSchema;
 use serde::Deserialize;
 
-#[derive(serde::Serialize, Deserialize, Selectable, Queryable, AsChangeset, JsonSchema, Debug)]
+#[derive(
+    serde::Serialize,
+    Deserialize,
+    Selectable,
+    Queryable,
+    AsChangeset,
+    JsonSchema,
+    OperationIo,
+    Debug,
+)]
 pub struct User {
     pub id: i32,
     pub name: String,

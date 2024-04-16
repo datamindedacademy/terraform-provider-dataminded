@@ -1,4 +1,4 @@
-use aide::axum::routing::get;
+use aide::axum::routing::get_with;
 use aide::axum::ApiRouter;
 use axum::extract::Path;
 use axum::extract::State;
@@ -16,14 +16,76 @@ use crate::schema::chapters;
 
 pub fn chapter_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
     ApiRouter::new()
-        .api_route("/", get(list_chapters).post(create_chapter))
+        .api_route(
+            "/",
+            get_with(list_chapters, |op| {
+                op.id("listChapters")
+                    .description("List chapters")
+                    .response_with::<200, Json<Vec<Chapter>>, _>(|res| {
+                        res.description("A list of chapters").example(vec![Chapter {
+                            id: 1,
+                            name: "Chapter 1".to_string(),
+                        }])
+                    })
+            })
+            .post_with(create_chapter, |op| {
+                op.id("createChapter")
+                    .description("Create a new chapter")
+                    .response_with::<201, Json<Chapter>, _>(|res| {
+                        res.description("The created chapter").example(Chapter {
+                            id: 1,
+                            name: "Chapter 1".to_string(),
+                        })
+                    })
+            }),
+        )
         .api_route(
             "/:id",
-            get(get_one_chapter)
-                .put(update_chapter)
-                .delete(delete_chapter),
+            get_with(get_one_chapter, |op| {
+                op.id("getChapter")
+                    .description("Get a chapter by ID")
+                    .response_with::<200, Json<Chapter>, _>(|res| {
+                        res.description("The requested chapter").example(Chapter {
+                            id: 1,
+                            name: "Chapter 1".to_string(),
+                        })
+                    })
+            })
+            .put_with(update_chapter, |op| {
+                op.id("updateChapter")
+                    .description("Update a chapter by ID")
+                    .response_with::<200, Json<Chapter>, _>(|res| {
+                        res.description("The updated chapter").example(Chapter {
+                            id: 1,
+                            name: "Chapter 1".to_string(),
+                        })
+                    })
+            })
+            .delete_with(delete_chapter, |op| {
+                op.id("deleteChapter")
+                    .description("Delete a chapter by ID")
+                    .response_with::<202, Json<Chapter>, _>(|res| {
+                        res.description("The deleted chapter").example(Chapter {
+                            id: 1,
+                            name: "Chapter 1".to_string(),
+                        })
+                    })
+            }),
         )
-        .api_route("/member", get(list_chapter_members))
+        .api_route(
+            "/member",
+            get_with(list_chapter_members, |op| {
+                op.id("listChapterMembers")
+                    .description("List chapter members")
+                    .response_with::<200, Json<Vec<Chapter>>, _>(|res| {
+                        res.description("A list of chapter members")
+                            .example(vec![Chapter {
+                                id: 1,
+                                name: "Chapter 1".to_string(),
+                            }])
+                    })
+            }),
+        )
         .nest("/:id/member", chapter_member_routes())
 }
 

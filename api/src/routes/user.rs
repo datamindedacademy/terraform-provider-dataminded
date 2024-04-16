@@ -1,4 +1,4 @@
-use aide::axum::routing::get;
+use aide::axum::routing::get_with;
 use aide::axum::ApiRouter;
 use axum::extract::Path;
 use axum::extract::State;
@@ -14,10 +14,61 @@ use crate::schema::users;
 
 pub fn user_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
     ApiRouter::new()
-        .api_route("/", get(list_users).post(create_user))
+        .api_route(
+            "/",
+            get_with(list_users, |op| {
+                op.id("listUsers")
+                    .description("List users")
+                    .response_with::<200, Json<Vec<User>>, _>(|res| {
+                        res.description("A list of users").example(vec![User {
+                            id: 1,
+                            name: "Alice".to_string(),
+                        }])
+                    })
+            })
+            .post_with(create_user, |op| {
+                op.id("createUser")
+                    .description("Create a new user")
+                    .response_with::<201, Json<User>, _>(|res| {
+                        res.description("The created user").example(User {
+                            id: 1,
+                            name: "Alice".to_string(),
+                        })
+                    })
+            }),
+        )
         .api_route(
             "/:id",
-            get(get_one_user).put(update_user).delete(delete_user),
+            get_with(get_one_user, |op| {
+                op.id("getUser")
+                    .description("Get a user by ID")
+                    .response_with::<200, Json<User>, _>(|res| {
+                        res.description("The requested user").example(User {
+                            id: 1,
+                            name: "Bob".to_string(),
+                        })
+                    })
+            })
+            .put_with(update_user, |op| {
+                op.id("updateUser")
+                    .description("Update a user by ID")
+                    .response_with::<200, Json<User>, _>(|res| {
+                        res.description("The updated user").example(User {
+                            id: 1,
+                            name: "Charlie".to_string(),
+                        })
+                    })
+            })
+            .delete_with(delete_user, |op| {
+                op.id("deleteUser")
+                    .description("Delete a user by ID")
+                    .response_with::<202, Json<User>, _>(|res| {
+                        res.description("The deleted user").example(User {
+                            id: 1,
+                            name: "David".to_string(),
+                        })
+                    })
+            }),
         )
 }
 

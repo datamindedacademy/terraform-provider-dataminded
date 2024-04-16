@@ -5,6 +5,7 @@ use aide::{
     axum::{routing::get, ApiRouter, IntoApiResponse},
     openapi::{Info, OpenApi},
     redoc::Redoc,
+    scalar::Scalar,
 };
 use routes::user::user_routes;
 
@@ -53,7 +54,18 @@ async fn main() {
     // build our application with some routes
     let app = ApiRouter::new()
         // generate redoc-ui using the openapi spec route
-        .route("/redoc", Redoc::new("/api.json").axum_route())
+        .route(
+            "/",
+            Scalar::new("/api.json")
+                .with_title("Data Minded example API")
+                .axum_route(),
+        )
+        .route(
+            "/redoc",
+            Redoc::new("/api.json")
+                .with_title("Data Minded example API")
+                .axum_route(),
+        )
         .nest("/user", user_routes())
         .nest("/chapter", chapter_routes())
         .with_state(pool)
