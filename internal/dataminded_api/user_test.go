@@ -7,6 +7,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateUser(t *testing.T) {
+	data := acceptance.BuildTestData(t)
+	connection := Connection{
+		Host: data.Host,
+		Port: data.Port,
+	}
+
+	user, err := CreateUser(connection, data.RandomString)
+
+	if err != nil {
+		t.Log(err)
+	}
+	assert.Nil(t, err)
+	assert.Equal(t, data.RandomString, user.Name)
+}
+
 func TestListUsers(t *testing.T) {
 	data := acceptance.BuildTestData(t)
 	connection := Connection{
@@ -16,5 +32,8 @@ func TestListUsers(t *testing.T) {
 
 	_, err := ListUsers(connection)
 
-	assert.NotNil(t, err)
+	if err != nil {
+		t.Log(err)
+	}
+	assert.Nil(t, err)
 }
