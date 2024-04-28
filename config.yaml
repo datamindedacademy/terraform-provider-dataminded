@@ -1,0 +1,5 @@
+package: main
+generate:
+  client: true
+  models: true
+output: dm.gen.go
