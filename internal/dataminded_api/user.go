@@ -145,3 +145,7 @@ func DeleteUser(connection Connection, id int) error {
 
 	return nil
 }
+
+func UserExists(user User) bool {
+	return user.Id != -1
+}

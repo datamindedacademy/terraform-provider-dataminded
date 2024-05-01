@@ -1,21 +1,23 @@
-package dataminded_api
+package dataminded_api_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-provider-scaffolding-framework/internal/acceptance"
+	"terraform-provider-dataminded/internal/acceptance"
+	"terraform-provider-dataminded/internal/dataminded_api"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateUser(t *testing.T) {
 	data := acceptance.BuildTestData(t)
-	connection := Connection{
+	connection := dataminded_api.Connection{
 		Host: data.Host,
 		Port: data.Port,
 	}
 
-	user, err := CreateUser(connection, data.RandomString)
+	user, err := dataminded_api.CreateUser(connection, data.RandomString)
 
 	if err != nil {
 		t.Log(err)
@@ -24,7 +26,7 @@ func TestCreateUser(t *testing.T) {
 	assert.Equal(t, data.RandomString, user.Name)
 
 	// Test that the user is read correctly
-	user, err = ReadUser(connection, user.Id)
+	user, err = dataminded_api.ReadUser(connection, user.Id)
 	if err != nil {
 		t.Log(err)
 	}
@@ -32,8 +34,8 @@ func TestCreateUser(t *testing.T) {
 	assert.Equal(t, data.RandomString, user.Name)
 
 	// Test that the user is in the list of users
-	var users []User
-	users, err = ListUsers(connection)
+	var users []dataminded_api.User
+	users, err = dataminded_api.ListUsers(connection)
 	if err != nil {
 		t.Log(err)
 	}
@@ -51,13 +53,13 @@ func TestCreateUser(t *testing.T) {
 
 func TestReadNonExistentUser(t *testing.T) {
 	data := acceptance.BuildTestData(t)
-	connection := Connection{
+	connection := dataminded_api.Connection{
 		Host: data.Host,
 		Port: data.Port,
 	}
 
 	t.Log(data.RandomInteger)
-	user, err := ReadUser(connection, data.RandomInteger)
+	user, err := dataminded_api.ReadUser(connection, data.RandomInteger)
 
 	if err != nil {
 		t.Log(err)
@@ -68,12 +70,12 @@ func TestReadNonExistentUser(t *testing.T) {
 
 func TestListUsers(t *testing.T) {
 	data := acceptance.BuildTestData(t)
-	connection := Connection{
+	connection := dataminded_api.Connection{
 		Host: data.Host,
 		Port: data.Port,
 	}
 
-	_, err := ListUsers(connection)
+	_, err := dataminded_api.ListUsers(connection)
 
 	if err != nil {
 		t.Log(err)
@@ -83,7 +85,7 @@ func TestListUsers(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	data := acceptance.BuildTestData(t)
-	connection := Connection{
+	connection := dataminded_api.Connection{
 		Host: data.Host,
 		Port: data.Port,
 	}
@@ -91,7 +93,7 @@ func TestUpdateUser(t *testing.T) {
 	originalName := data.RandomString
 	newName := fmt.Sprintf("%s-new", originalName)
 
-	user, err := CreateUser(connection, originalName)
+	user, err := dataminded_api.CreateUser(connection, originalName)
 	originalId := user.Id
 
 	if err != nil {
@@ -100,7 +102,7 @@ func TestUpdateUser(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, originalName, user.Name)
 
-	user, err = UpdateUser(connection, originalId, newName)
+	user, err = dataminded_api.UpdateUser(connection, originalId, newName)
 	if err != nil {
 		t.Log(err)
 	}
@@ -108,7 +110,7 @@ func TestUpdateUser(t *testing.T) {
 	assert.Equal(t, newName, user.Name)
 
 	// check that if we read the originalId we obtain the new name
-	user, err = ReadUser(connection, originalId)
+	user, err = dataminded_api.ReadUser(connection, originalId)
 	if err != nil {
 		t.Log(err)
 	}
@@ -118,12 +120,12 @@ func TestUpdateUser(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	data := acceptance.BuildTestData(t)
-	connection := Connection{
+	connection := dataminded_api.Connection{
 		Host: data.Host,
 		Port: data.Port,
 	}
 
-	user, err := CreateUser(connection, data.RandomString)
+	user, err := dataminded_api.CreateUser(connection, data.RandomString)
 
 	if err != nil {
 		t.Log(err)
@@ -131,14 +133,14 @@ func TestDeleteUser(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, data.RandomString, user.Name)
 
-	err = DeleteUser(connection, user.Id)
+	err = dataminded_api.DeleteUser(connection, user.Id)
 	if err != nil {
 		t.Log(err)
 	}
 	assert.Nil(t, err)
 
 	// check that the user no longer exists
-	user, err = ReadUser(connection, data.RandomInteger)
+	user, err = dataminded_api.ReadUser(connection, data.RandomInteger)
 
 	if err != nil {
 		t.Log(err)
