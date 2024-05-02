@@ -38,7 +38,7 @@ async fn main() {
     let pool = diesel::r2d2::Pool::builder()
         .max_size(1)
         .build(diesel::r2d2::ConnectionManager::<SqliteConnection>::new(
-            ":memory:",
+            "data/dm.db",
         ))
         .expect("Failed to create pool");
 
@@ -81,7 +81,7 @@ async fn main() {
     };
 
     // run it with hyper
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::debug!("listening on {addr}");
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(
