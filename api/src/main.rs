@@ -66,8 +66,8 @@ async fn main() {
                 .with_title("Data Minded example API")
                 .axum_route(),
         )
-        .nest("/user", user_routes())
-        .nest("/chapter", chapter_routes())
+        .nest("/user/", user_routes())
+        .nest("/chapter/", chapter_routes())
         .with_state(pool)
         // We'll serve our generated document here.
         .route("/api.json", get(serve_api));

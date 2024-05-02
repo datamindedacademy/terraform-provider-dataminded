@@ -73,7 +73,7 @@ pub fn chapter_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> 
             }),
         )
         .api_route(
-            "/member",
+            "/member/",
             get_with(list_chapter_members, |op| {
                 op.id("listChapterMembers")
                     .description("List chapter members")
@@ -86,7 +86,7 @@ pub fn chapter_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> 
                     })
             }),
         )
-        .nest("/:id/member", chapter_member_routes())
+        .nest("/:id/member/", chapter_member_routes())
 }
 
 async fn create_chapter(
