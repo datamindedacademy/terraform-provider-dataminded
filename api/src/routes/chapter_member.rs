@@ -8,7 +8,7 @@ use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::SqliteConnection;
 
 use super::error::internal_error;
-use crate::model::chapter_member::{ChapterMember, NewChapterMember};
+use crate::model::chapter_member::{ChapterMember, ChapterRole, NewChapterMember};
 use crate::schema::chapter_members;
 
 pub fn chapter_member_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnection>>> {
@@ -23,7 +23,7 @@ pub fn chapter_member_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnect
                             .example(vec![ChapterMember {
                                 chapter_id: 1,
                                 user_id: 1,
-                                role: Some("Contributor".to_string()),
+                                role: Some(ChapterRole::Contributor),
                             }])
                     })
             }),
@@ -38,7 +38,7 @@ pub fn chapter_member_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnect
                             .example(ChapterMember {
                                 chapter_id: 1,
                                 user_id: 1,
-                                role: Some("Contributor".to_string()),
+                                role: Some(ChapterRole::Contributor),
                             })
                     })
             })
@@ -50,7 +50,7 @@ pub fn chapter_member_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnect
                             .example(ChapterMember {
                                 chapter_id: 1,
                                 user_id: 1,
-                                role: Some("Contributor".to_string()),
+                                role: Some(ChapterRole::Contributor),
                             })
                     })
             })
@@ -62,7 +62,7 @@ pub fn chapter_member_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnect
                             .example(ChapterMember {
                                 chapter_id: 1,
                                 user_id: 1,
-                                role: Some("Contributor".to_string()),
+                                role: Some(ChapterRole::Contributor),
                             })
                     })
             })
@@ -74,7 +74,7 @@ pub fn chapter_member_routes() -> ApiRouter<Pool<ConnectionManager<SqliteConnect
                             .example(ChapterMember {
                                 chapter_id: 1,
                                 user_id: 1,
-                                role: Some("Contributor".to_string()),
+                                role: Some(ChapterRole::Contributor),
                             })
                     })
             }),
@@ -134,11 +134,16 @@ async fn update_chapter_member(
     Json(chapter_member): Json<NewChapterMember>,
 ) -> Result<Json<ChapterMember>, (StatusCode, String)> {
     tracing::info!(
-        "Channging member {:?} of chapter {:?} to role {:?}",
+        "Changing member {:?} of chapter {:?} to role {:?}",
         user_id,
         chapter_id,
         chapter_member.role
     );
+
+    let mut chapter_member = chapter_member; // Declare chapter_member as mutable
+    if chapter_member.role.is_none() {
+        chapter_member.role = Some(ChapterRole::Contributor);
+    }
     let mut conn = pool.get().map_err(internal_error)?;
     let res = conn
         .transaction(|conn| {
