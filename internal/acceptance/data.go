@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	// charSetAlphaNum is the alphanumeric character set for use with randStringFromCharSet
+	// charSetAlphaNum is the alphanumeric character set for use with randStringFromCharSet.
 	charSetAlphaNum = "abcdefghijklmnopqrstuvwxyz012346789"
 )
 
@@ -31,13 +31,13 @@ func BuildTestData(t *testing.T) TestData {
 	return testData
 }
 
-// randString generates a random alphanumeric string of the length specified
+// randString generates a random alphanumeric string of the length specified.
 func randString(strlen int) string {
 	return randStringFromCharSet(strlen, charSetAlphaNum)
 }
 
 // randStringFromCharSet generates a random string by selecting characters from
-// the charset provided
+// the charset provided.
 func randStringFromCharSet(strlen int, charSet string) string {
 	result := make([]byte, strlen)
 	for i := 0; i < strlen; i++ {

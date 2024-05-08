@@ -32,7 +32,7 @@ func (r *UserResource) Metadata(_ context.Context, req resource.MetadataRequest,
 
 func (r *UserResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: fmt.Sprintf("Manage Data Minded users"),
+		Description: "Manage Data Minded users",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.Int64Attribute{
 				Computed:    true,
@@ -65,7 +65,7 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	// User creation successfull --> Set state of computed variables (Id)
+	// User creation successful --> Set state of computed variables (Id)
 	plan.Id = types.Int64Value(int64(user.Id))
 
 	diags = resp.State.Set(ctx, plan)
@@ -134,7 +134,7 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	// User update successfull --> Set state of computed variables (Id)
+	// User update successful --> Set state of computed variables (Id)
 	plan.Id = types.Int64Value(int64(user.Id))
 
 	diags := resp.State.Set(ctx, plan)

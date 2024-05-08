@@ -32,7 +32,7 @@ func (r *ChapterResource) Metadata(_ context.Context, req resource.MetadataReque
 
 func (r *ChapterResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: fmt.Sprintf("Manage Data Minded chapters"),
+		Description: "Manage Data Minded chapters",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.Int64Attribute{
 				Computed:    true,
@@ -65,7 +65,7 @@ func (r *ChapterResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	// Chapter creation successfull --> Set state of computed variables (Id)
+	// Chapter creation successful --> Set state of computed variables (Id)
 	plan.Id = types.Int64Value(int64(chapter.Id))
 
 	diags = resp.State.Set(ctx, plan)
@@ -134,7 +134,7 @@ func (r *ChapterResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// Chapter update successfull --> Set state of computed variables (Id)
+	// Chapter update successful --> Set state of computed variables (Id)
 	plan.Id = types.Int64Value(int64(chapter.Id))
 
 	diags := resp.State.Set(ctx, plan)

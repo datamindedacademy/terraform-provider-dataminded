@@ -35,7 +35,7 @@ func (r *ChapterMemberResource) Metadata(_ context.Context, req resource.Metadat
 
 func (r *ChapterMemberResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: fmt.Sprintf("Manage Data Minded chapter members"),
+		Description: "Manage Data Minded chapter members",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
@@ -83,7 +83,7 @@ func (r *ChapterMemberResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	// ChapterMember creation successfull --> Set state of computed variables (Id)
+	// ChapterMember creation successful --> Set state of computed variables (Id)
 	plan.Id = types.StringValue(fmt.Sprintf("chapter/%d/member/%d", chapterId, userId))
 
 	diags = resp.State.Set(ctx, plan)
