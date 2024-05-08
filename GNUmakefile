@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 default: testacc
 
 # Run acceptance tests
