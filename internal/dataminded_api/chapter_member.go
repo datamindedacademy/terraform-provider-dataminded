@@ -3,7 +3,6 @@ package dataminded_api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -64,7 +63,7 @@ func CreateChapterMember(connection Connection, chapterId int, userId int, role 
 	}
 
 	if response.StatusCode >= 400 {
-		return errors.New(fmt.Sprintf("Non 200 status code when creating chapter member %d/%d. Detailed error: %s", chapterId, userId, string(responseData)))
+		return fmt.Errorf("non 200 status code when creating chapter member %d/%d. Detailed error: %s", chapterId, userId, string(responseData))
 	}
 
 	return nil
@@ -96,7 +95,7 @@ func UpdateChapterMember(connection Connection, chapterId int, userId int, role 
 	}
 
 	if response.StatusCode >= 400 {
-		return errors.New(fmt.Sprintf("Non 200 status code when updating chapter member %d/%d. Detailed error: %s", chapterId, userId, string(responseData)))
+		return fmt.Errorf("non 200 status code when updating chapter member %d/%d. Detailed error: %s", chapterId, userId, string(responseData))
 	}
 
 	return nil
@@ -119,7 +118,7 @@ func DeleteChapterMember(connection Connection, chapterId int, userId int) error
 	}
 
 	if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Non 200 status code when deleting chapter member %d/%d", chapterId, userId))
+		return fmt.Errorf("non 200 status code when deleting chapter member %d/%d", chapterId, userId)
 	}
 
 	return nil

@@ -3,7 +3,6 @@ package dataminded_api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,7 +14,7 @@ type Chapter struct {
 }
 
 func ListChapters(connection Connection) ([]Chapter, error) {
-	response, err := http.Get(fmt.Sprintf("%s/chapter", baseUrl(connection)))
+	response, err := http.Get(fmt.Sprintf("%s/chapter/", baseUrl(connection)))
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +39,7 @@ func CreateChapter(connection Connection, name string) (Chapter, error) {
 	}`, name))
 
 	response, err := http.Post(
-		fmt.Sprintf("%s/chapter", baseUrl(connection)),
+		fmt.Sprintf("%s/chapter/", baseUrl(connection)),
 		"application/json",
 		bytes.NewBuffer(body),
 	)
@@ -140,7 +139,7 @@ func DeleteChapter(connection Connection, id int) error {
 	}
 
 	if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Non 200 status code when deleting chapter %d", id))
+		return fmt.Errorf("non 200 status code when deleting chapter %d", id)
 	}
 
 	return nil

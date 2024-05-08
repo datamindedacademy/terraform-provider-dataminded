@@ -3,7 +3,6 @@ package dataminded_api
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,7 +14,7 @@ type User struct {
 }
 
 func ListUsers(connection Connection) ([]User, error) {
-	response, err := http.Get(fmt.Sprintf("%s/user", baseUrl(connection)))
+	response, err := http.Get(fmt.Sprintf("%s/user/", baseUrl(connection)))
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +39,7 @@ func CreateUser(connection Connection, name string) (User, error) {
 	}`, name))
 
 	response, err := http.Post(
-		fmt.Sprintf("%s/user", baseUrl(connection)),
+		fmt.Sprintf("%s/user/", baseUrl(connection)),
 		"application/json",
 		bytes.NewBuffer(body),
 	)
@@ -140,7 +139,7 @@ func DeleteUser(connection Connection, id int) error {
 	}
 
 	if response.StatusCode != 200 {
-		return errors.New(fmt.Sprintf("Non 200 status code when deleting user %d", id))
+		return fmt.Errorf("non 200 status code when deleting user %d", id)
 	}
 
 	return nil
