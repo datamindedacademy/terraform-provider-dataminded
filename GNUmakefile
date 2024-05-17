@@ -8,3 +8,6 @@ testacc:
 
 api:
 	pushd api && make run
+
+install:
+	go install . 

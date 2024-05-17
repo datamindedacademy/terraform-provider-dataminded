@@ -1,0 +1,16 @@
+ANALYTICS:
+ - name: Michiel
+   role: Lead
+ - name: Wouter
+ - name: Jos
+ - name: Pascal
+ - name: Jan
+ - name: Niels
+ 
+PLATFORM:
+ - name: Jonathan
+   role: Lead
+ - name: Jelle
+ - name: Robbert
+ - name: Moenes
+ - name: Jonas

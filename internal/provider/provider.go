@@ -11,29 +11,33 @@ import (
 	"terraform-provider-dataminded/internal/services/chapter_member"
 	"terraform-provider-dataminded/internal/services/user"
 
+	"terraform-provider-dataminded/internal/services/functions"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
 // Ensure ScaffoldingProvider satisfies various provider interfaces.
-var _ provider.Provider = &datamindedProvider{}
+var _ provider.Provider = &DataMindedProvider{}
+var _ provider.ProviderWithFunctions = &DataMindedProvider{}
 
 // ScaffoldingProvider defines the provider implementation.
-type datamindedProvider struct {
+type DataMindedProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
 }
 
-func (p *datamindedProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+func (p *DataMindedProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "dataminded"
 	resp.Version = p.version
 }
 
-func (p *datamindedProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *DataMindedProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"host": schema.StringAttribute{
@@ -48,7 +52,7 @@ func (p *datamindedProvider) Schema(ctx context.Context, req provider.SchemaRequ
 	}
 }
 
-func (p *datamindedProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+func (p *DataMindedProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var data ProviderConfigModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -66,7 +70,7 @@ func (p *datamindedProvider) Configure(ctx context.Context, req provider.Configu
 	resp.ResourceData = &connection
 }
 
-func (p *datamindedProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *DataMindedProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		user.NewUserResource,
 		chapter.NewChapterResource,
@@ -74,13 +78,19 @@ func (p *datamindedProvider) Resources(ctx context.Context) []func() resource.Re
 	}
 }
 
-func (p *datamindedProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *DataMindedProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{}
+}
+
+func (p *DataMindedProvider) Functions(ctx context.Context) []func() function.Function {
+	return []func() function.Function{
+		functions.NewConfigParser,
+	}
 }
 
 func New(version string) func() provider.Provider {
 	return func() provider.Provider {
-		return &datamindedProvider{
+		return &DataMindedProvider{
 			version: version,
 		}
 	}
