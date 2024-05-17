@@ -7,12 +7,8 @@ import (
 	"terraform-provider-dataminded/internal/dataminded_api"
 	"terraform-provider-dataminded/internal/logging"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -36,29 +32,7 @@ func (r *ChapterMemberResource) Metadata(_ context.Context, req resource.Metadat
 func (r *ChapterMemberResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manage Data Minded chapter members",
-		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: "Internal id of terraform to manage this resource",
-			},
-			"chapter": schema.Int64Attribute{
-				Required:    true,
-				Description: "Id of the chapter in the sqlite database.",
-			},
-			"member": schema.Int64Attribute{
-				Required:    true,
-				Description: "Id of the user in the sqlite database.",
-			},
-			"role": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "Role of the chapter member",
-				Default:     stringdefault.StaticString("Contributor"),
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"Contributor", "Lead"}...),
-				},
-			},
-		},
+		Attributes:  map[string]schema.Attribute{},
 	}
 }
 
@@ -71,20 +45,7 @@ func (r *ChapterMemberResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	chapterId := int(plan.ChapterId.ValueInt64())
-	userId := int(plan.UserId.ValueInt64())
-	role := plan.Role.ValueString()
-
-	err := dataminded_api.CreateChapterMember(r.Connection, chapterId, userId, role)
-
-	if err != nil {
-		logging.AddError(ctx, "Creation of chapter member failed", err)
-		return
-	}
-
-	// ChapterMember creation successful --> Set state of computed variables (Id)
-	plan.Id = types.StringValue(fmt.Sprintf("chapter/%d/member/%d", chapterId, userId))
+	// TODO: use plan to create the chapter_member, and return result to the state
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -104,23 +65,8 @@ func (r *ChapterMemberResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	chapterId := int(state.ChapterId.ValueInt64())
-	userId := int(state.UserId.ValueInt64())
-
-	chapterMember, err := dataminded_api.ReadChapterMember(r.Connection, chapterId, userId)
-
-	if err != nil {
-		logging.AddError(ctx, "Reading chapter_member failed", err)
-		return
-	}
-
-	if !dataminded_api.ChapterMemberExists(chapterMember) {
-		resp.State.RemoveResource(ctx)
-		return
-	}
-
-	// Set the read values
-	state.Role = types.StringValue(chapterMember.Role)
+	// Use the state to read the chapter_member from the API
+	// If the chapter_member is not found, mark it for deletion
 
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -143,16 +89,7 @@ func (r *ChapterMemberResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	chapterId := int(state.ChapterId.ValueInt64())
-	userId := int(state.UserId.ValueInt64())
-	newRole := plan.Role.ValueString()
-
-	err := dataminded_api.UpdateChapterMember(r.Connection, chapterId, userId, newRole)
-
-	if err != nil {
-		logging.AddError(ctx, "Updating chapter member failed", err)
-		return
-	}
+	// Use the plan to update the chapter_member
 
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -171,15 +108,8 @@ func (r *ChapterMemberResource) Delete(ctx context.Context, req resource.DeleteR
 	if logging.HasError(ctx) {
 		return
 	}
+	// Use the state to delete the chapter_member
 
-	chapterId := int(state.ChapterId.ValueInt64())
-	userId := int(state.UserId.ValueInt64())
-
-	err := dataminded_api.DeleteChapterMember(r.Connection, chapterId, userId)
-
-	if err != nil {
-		logging.AddError(ctx, "Dropping chapter_member failed", err)
-	}
 }
 
 func (r *ChapterMemberResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
