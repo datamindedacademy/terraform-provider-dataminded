@@ -37,3 +37,7 @@ website/vendor
 vendor
 
 *.db
+.cargo
+.gitpod
+.pyenv_mirror
+.vscode-remote
