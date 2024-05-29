@@ -1,3 +1,3 @@
 resource "dataminded_user" "me" {
-  name = "Jonas"
+  name = "me"
 }

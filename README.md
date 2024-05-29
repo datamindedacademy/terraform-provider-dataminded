@@ -2,6 +2,7 @@
 
 This repository contains the code for the Terraform provider workshop.
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datamindedacademy/terraform-provider-dataminded)
 
 Steps:
 

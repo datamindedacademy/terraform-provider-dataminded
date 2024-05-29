@@ -1,16 +1,11 @@
 analytics:
-- name: Michiel
-  role: Lead
-- name: Wouter
-  role: Contributor
-
-
+  - name: Michiel
+    role: Lead
+  - name: Wouter
+    role: Contributor
 
 platform:
-
-- name: Jonathan
-  role: Lead
-- name: Jonas
-  role: Contributor
-
-
+  - name: Jonathan
+    role: Lead
+  - name: Jelle
+    role: Contributor
