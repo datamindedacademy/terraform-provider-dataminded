@@ -44,3 +44,4 @@ vendor
 .vscode-remote
 
 go
+.docker-root
