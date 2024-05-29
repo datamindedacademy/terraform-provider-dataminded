@@ -2,7 +2,6 @@
 
 This repository contains the code for the Terraform provider workshop.
 
-
 Steps:
 
 1. Setup local environment: make changes in `.terraformrc` (link to docs).
