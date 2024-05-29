@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     dataminded = {
-      source = "dataminded/data-minded"
+      source = "dataminded/dataminded"
     }
 
   }
