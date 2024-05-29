@@ -6,7 +6,7 @@ This repository contains the code for the Terraform provider workshop.
 
 Steps:
 
-1. Setup local environment: make changes in `.terraformrc` (link to docs).
+1. Setup local environment: make changes in [`.terraformrc`](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers).
 2. Create a new shell, and start the API: `make api`.
 3. Complete the provider implementation for the `chapter` resource. Have a look at the `user` resource for inspiration.
 4. Complete the provider implementaiton for the `chatper_member` resource.
