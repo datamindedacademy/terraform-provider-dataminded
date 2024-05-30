@@ -9,9 +9,11 @@ import (
 	"terraform-provider-dataminded/internal/dataminded_api"
 	"terraform-provider-dataminded/internal/services/chapter"
 	"terraform-provider-dataminded/internal/services/chapter_member"
+	"terraform-provider-dataminded/internal/services/functions"
 	"terraform-provider-dataminded/internal/services/user"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -19,6 +21,7 @@ import (
 
 // Ensure ScaffoldingProvider satisfies various provider interfaces.
 var _ provider.Provider = &datamindedProvider{}
+var _ provider.ProviderWithFunctions = &datamindedProvider{}
 
 // ScaffoldingProvider defines the provider implementation.
 type datamindedProvider struct {
@@ -76,6 +79,12 @@ func (p *datamindedProvider) Resources(ctx context.Context) []func() resource.Re
 
 func (p *datamindedProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{}
+}
+
+func (p *datamindedProvider) Functions(ctx context.Context) []func() function.Function {
+	return []func() function.Function{
+		functions.NewConfigParser,
+	}
 }
 
 func New(version string) func() provider.Provider {
