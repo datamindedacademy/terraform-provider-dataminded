@@ -4,10 +4,11 @@ go 1.21
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.19.3
-	github.com/hashicorp/terraform-plugin-framework v1.8.0
+	github.com/hashicorp/terraform-plugin-framework v1.9.0
 	github.com/hashicorp/terraform-plugin-go v0.23.0
 	github.com/hashicorp/terraform-plugin-testing v1.8.0
 	github.com/stretchr/testify v1.9.0
+	gopkg.in/yaml.v2 v2.3.0
 )
 
 require (
@@ -82,6 +83,5 @@ require (
 	google.golang.org/grpc v1.63.2 // indirect
 	google.golang.org/protobuf v1.34.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
