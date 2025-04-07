@@ -62,7 +62,7 @@ type ChapterMember struct {
 
 type ChapterConfig map[string][]ChapterMember
 
-func parseChapterConfig(data string) (ChapterConfig, error) { //nolint:golint,unused
+func parseChapterConfig(data string) (ChapterConfig, error) { //nolint:unused
 	var parsedConfig ChapterConfig
 
 	// Parse the data into the ChapterConfig struct
