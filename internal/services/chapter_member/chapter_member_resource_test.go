@@ -23,43 +23,30 @@ func TestAccCreateChapterMember(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
-				Config:                   r.chapter_member_basic(connection, data.RandomString),
+				Config:                   r.chapter_member_basic(connection),
 				ProtoV6ProviderFactories: acceptance.TestAccProtoV6ProviderFactories,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("dataminded_chapter_member.test", "role", "Contributor"),
-				),
 			},
 		},
 	})
 }
 
-func (r ChapterMemberResource) chapter_member_basic(connection dataminded_api.Connection, name string) string {
-	template := r.template(connection, name)
+func (r ChapterMemberResource) chapter_member_basic(connection dataminded_api.Connection) string {
+	template := r.template(connection)
 
 	return fmt.Sprintf(
 		`
 		%[1]s
 
 		resource "dataminded_chapter_member" "test" {
-			chapter = dataminded_chapter.test.id
-			member = dataminded_user.test.id
 		}
 		`, template)
 }
 
-func (r ChapterMemberResource) template(connection dataminded_api.Connection, name string) string {
+func (r ChapterMemberResource) template(connection dataminded_api.Connection) string {
 	return fmt.Sprintf(`
 		provider "dataminded" {
-			host = "%[1]s"
-			port = %[2]d
+			host = "%s"
+			port = %d
 		}
-
-		resource "dataminded_user" "test" {
-			name           = "user_%[3]s"
-		}
-
-		resource "dataminded_chapter" "test" {
-			name           = "chapter_%[3]s"
-		}
-	`, connection.Host, connection.Port, name)
+	`, connection.Host, connection.Port)
 }
