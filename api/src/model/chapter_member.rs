@@ -8,8 +8,8 @@ use diesel::serialize;
 use diesel::sql_types::*;
 use diesel::sqlite::Sqlite;
 use diesel::sqlite::SqliteValue;
-use schemars::JsonSchema;
 use serde::Deserialize;
+use utoipa::ToSchema;
 
 #[derive(
     serde::Serialize,
@@ -19,7 +19,7 @@ use serde::Deserialize;
     Insertable,
     AsChangeset,
     Queryable,
-    JsonSchema,
+    ToSchema,
     Debug,
 )]
 #[diesel(belongs_to(Chapter))]
@@ -31,13 +31,13 @@ pub struct ChapterMember {
     pub role: Option<ChapterRole>,
 }
 
-#[derive(serde::Deserialize, AsChangeset, JsonSchema, Debug)]
+#[derive(serde::Deserialize, AsChangeset, ToSchema, Debug)]
 #[diesel(table_name = chapter_members)]
 pub struct NewChapterMember {
     pub role: Option<ChapterRole>,
 }
 
-#[derive(serde::Serialize, Deserialize, JsonSchema, Debug, AsExpression)]
+#[derive(serde::Serialize, Deserialize, ToSchema, Debug, AsExpression)]
 #[diesel(sql_type = diesel::sql_types::Text)]
 pub enum ChapterRole {
     Contributor,
