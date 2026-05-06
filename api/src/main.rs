@@ -1,28 +1,28 @@
 mod model;
 mod routes;
 mod schema;
-use aide::{
-    axum::{routing::get, ApiRouter, IntoApiResponse},
-    openapi::{Info, OpenApi},
-    redoc::Redoc,
-    scalar::Scalar,
-};
-use routes::user::user_routes;
 
-use axum::{Extension, Json};
+use axum::Json;
 use diesel::{connection::SimpleConnection, prelude::*};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use utoipa::OpenApi;
+use utoipa_axum::router::OpenApiRouter;
+use utoipa_redoc::{Redoc, Servable as RedocServable};
+use utoipa_scalar::{Scalar, Servable as ScalarServable};
 
 use crate::routes::chapter::chapter_routes;
-// normally part of your generated schema.rs file
+use crate::routes::user::user_routes;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
 
-async fn serve_api(Extension(api): Extension<OpenApi>) -> impl IntoApiResponse {
-    Json(api)
-}
+#[derive(OpenApi)]
+#[openapi(info(
+    title = "Data Minded example API",
+    description = "Data Minded example API"
+))]
+struct ApiDoc;
 
 #[tokio::main]
 async fn main() {
@@ -34,7 +34,6 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    // set up connection pool
     let pool = diesel::r2d2::Pool::builder()
         .max_size(1)
         .build(diesel::r2d2::ConnectionManager::<SqliteConnection>::new(
@@ -42,54 +41,30 @@ async fn main() {
         ))
         .expect("Failed to create pool");
 
-    // run the migrations on server startup
     {
         let mut conn = pool.get().unwrap();
         conn.transaction(|conn| conn.run_pending_migrations(MIGRATIONS).map(|_| ()))
             .unwrap();
-        // enforce foreign key constraints
         conn.batch_execute("PRAGMA foreign_keys = ON").unwrap();
     }
 
-    // build our application with some routes
-    let app = ApiRouter::new()
-        // generate redoc-ui using the openapi spec route
-        .route(
-            "/",
-            Scalar::new("/api.json")
-                .with_title("Data Minded example API")
-                .axum_route(),
-        )
-        .route(
-            "/redoc",
-            Redoc::new("/api.json")
-                .with_title("Data Minded example API")
-                .axum_route(),
-        )
-        .nest("/user/", user_routes())
-        .nest("/chapter/", chapter_routes())
+    let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
+        .nest("/user", user_routes())
+        .nest("/chapter", chapter_routes())
         .with_state(pool)
-        // We'll serve our generated document here.
-        .route("/api.json", get(serve_api));
+        .split_for_parts();
 
-    let mut api = OpenApi {
-        info: Info {
-            description: Some("Data Minded example API".to_string()),
-            ..Info::default()
-        },
-        ..OpenApi::default()
-    };
+    let app = router
+        .merge(Scalar::with_url("/", api.clone()))
+        .merge(Redoc::with_url("/redoc", api.clone()))
+        .route("/api.json", axum::routing::get(move || async move { Json(api) }));
 
-    // run it with hyper
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
+    let port: u16 = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(3000);
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::debug!("listening on {addr}");
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(
-        listener,
-        app.finish_api(&mut api)
-            .layer(Extension(api))
-            .into_make_service(),
-    )
-    .await
-    .unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
