@@ -1,152 +1,92 @@
-# Build a Terraform provider from scratch
+# Implementing a Terraform provider
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/datamindedacademy/terraform-provider-dataminded)
 
-📚 A workshop brought to you by the [Data Minded Academy].
+📚 A workshop brought to you by the [Dataminded Academy].
 
-Every Terraform resource you have ever written was served by a provider: a plugin that
-translates HCL into API calls and keeps the result in state. Most engineers use providers
-for years without ever opening one up. This workshop has you write one.
+A Terraform provider is the plugin layer that translates declarative configuration into
+API calls and reconciles the result with state. This workshop examines that layer by
+implementing one.
 
-You implement a provider for the `dataminded` API, a small service that manages users,
-chapters, and the membership between them. You start from a working `user` resource and
-build the rest yourself.
-
-## What you will build
-
-By the end you will have written:
-
-- **Resource schemas** that declare what your HCL is allowed to say
-- **The full CRUD lifecycle**, including the drift detection that makes `terraform plan`
-  meaningful
-- **Attribute validation** with optional attributes and default values
-- **A provider-defined function**, the Terraform 1.8+ feature that lets a provider ship
-  its own HCL functions
-
-Each piece is verified by Terraform's acceptance testing framework, so you get a real
-signal on whether your implementation is correct.
+The subject is the `dataminded` API, a service managing users, chapters, and chapter
+membership. A complete `user` resource is supplied as a reference implementation; the
+remaining resources are yours to write. In doing so you will encounter resource schemas,
+the CRUD lifecycle and the drift detection that gives `terraform plan` its meaning,
+attribute validation, and provider-defined functions. Each is verified through Terraform's
+acceptance testing framework.
 
 ## Prerequisites
 
-Nothing, if you use Codespaces. Click the badge above and skip to
-[Getting started](#getting-started).
-
-To work locally you need:
-
-| Tool | Why |
-| --- | --- |
-| [Go](https://go.dev/dl/) 1.25+ | The provider is written in Go |
-| [Terraform](https://developer.hashicorp.com/terraform/install) 1.8+ | Provider-defined functions need 1.8 |
-| [Docker](https://docs.docker.com/get-docker/) | Runs the `dataminded` API |
+Codespaces requires nothing beyond the badge above. A local setup requires
+[Go](https://go.dev/dl/) 1.25+, [Terraform](https://developer.hashicorp.com/terraform/install)
+1.8+ (provider-defined functions were introduced in 1.8), and
+[Docker](https://docs.docker.com/get-docker/) to run the API.
 
 ## Getting started
 
-**1. Build the provider and point Terraform at it.**
+Compile the provider and direct Terraform to the resulting binary:
 
 ```bash
-make dev
-```
-
-Terraform normally downloads providers from a registry. Yours only exists on your machine,
-so `make dev` compiles it and writes a `.terraformrc` containing a
-[`dev_overrides`](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers)
-block that redirects `hashicorp.com/dev/dataminded` to your local binary.
-
-Export the variable that tells Terraform to read that file (Codespaces does this for you):
-
-```bash
+make build
 export TF_CLI_CONFIG_FILE=$PWD/.terraformrc
 ```
 
-**2. Start the API** in a second terminal, and leave it running:
+Terraform ordinarily retrieves providers from a registry. This one exists only locally, so
+the committed [`.terraformrc`](.terraformrc) declares a
+[`dev_overrides`](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers)
+block redirecting `hashicorp.com/dev/dataminded` to the `./bin` directory that `make build`
+writes to. That path is relative, so Terraform must be invoked from the repository root.
+
+Start the API in a second terminal and leave it running:
 
 ```bash
 make api
 ```
 
-It listens on `http://localhost:3000`, which serves interactive OpenAPI docs for the
-endpoints you are wrapping. The raw spec is at `/api.json`.
+It listens on `http://localhost:3000` and serves interactive OpenAPI documentation for the
+endpoints under consideration; the specification itself is at `/api.json`. Should the port
+be occupied, use `make api PORT=3001` and set `port = 3001` in the `provider` block of
+`main.tf`.
 
-**3. Check the wiring.**
+Verify the configuration with `terraform plan`. Terraform reports that development
+overrides are in effect, which is expected, then fails on the unimplemented `chapter`
+resource. That failure is the first exercise.
 
-```bash
-terraform plan
-```
+Note that `dev_overrides` bypasses `terraform init` and produces no lock file, so
+`terraform plan` and `terraform apply` are invoked directly. Because the override resolves
+to a compiled binary rather than to source, `make build` must be re-run after each change.
 
-Terraform warns that development overrides are in effect, which is exactly what you want.
-It then fails on the unimplemented `chapter` resource. That is your first exercise.
+## Exercises
 
-> With `dev_overrides` you do not run `terraform init`, and you should not commit a lock
-> file. Run `terraform plan` and `terraform apply` directly.
-
-## The exercises
-
-Work through them in order. Each has its own README with detailed instructions.
-
-| # | Exercise | You implement | Instructions |
+| # | Exercise | Subject | Instructions |
 | - | --- | --- | --- |
-| 1 | **Chapter resource** | Schema plus Create, Read, Update, Delete | [`internal/services/chapter`](internal/services/chapter/README.md) |
-| 2 | **Chapter member resource** | The same, with a validated optional `role` attribute | [`internal/services/chapter_member`](internal/services/chapter_member/README.md) |
-| 3 | **Provider-defined function** (optional) | `chapter_config_parser`, replacing some ugly HCL | [`internal/services/functions`](internal/services/functions/README.md) |
+| 1 | Chapter resource | Schema and the CRUD lifecycle | [`internal/services/chapter`](internal/services/chapter/README.md) |
+| 2 | Chapter member resource | The same, with a validated optional `role` attribute | [`internal/services/chapter_member`](internal/services/chapter_member/README.md) |
+| 3 | Provider-defined function (optional) | `chapter_config_parser`, replacing the equivalent HCL | [`internal/services/functions`](internal/services/functions/README.md) |
 
-The `user` resource in [`internal/services/user`](internal/services/user) is already
-complete. Read it first: exercises 1 and 2 follow the same shape.
+The completed `user` resource in [`internal/services/user`](internal/services/user) is
+worth reading first, as exercises 1 and 2 follow its structure. Verify your work with
+`make testacc`, or apply it to the configuration in [`main.tf`](main.tf).
 
-Verify your work with the acceptance tests:
+## Repository structure
 
-```bash
-make testacc
-```
-
-Or exercise the whole thing against the infrastructure in [`main.tf`](main.tf):
-
-```bash
-terraform apply
-```
-
-## How the pieces fit together
+Implementation work is confined to `internal/services/`. The HTTP client in
+`internal/dataminded_api/` is supplied, so that attention rests on the provider framework
+rather than on request plumbing.
 
 ```
-main.tf                      your HCL, describing chapters and members
-   |
-   v
-internal/provider/           wires resources and functions into the provider
-   |
-   v
-internal/services/<name>/    the resource you implement: schema + CRUD
-   |
-   v
-internal/dataminded_api/     ready-made HTTP client, no work needed here
-   |
-   v
-api/                         the Rust service the provider talks to
-```
-
-You spend your time in `internal/services/`. The API client in `internal/dataminded_api/`
-is written for you, so you can focus on the provider framework rather than on HTTP
-plumbing.
-
-## Troubleshooting
-
-**`Provider registry.terraform.io/hashicorp/dataminded was not found`**
-`TF_CLI_CONFIG_FILE` is not set, or points at the wrong file. Re-run `export
-TF_CLI_CONFIG_FILE=$PWD/.terraformrc` in the shell you are running Terraform from.
-
-**`connection refused` on port 3000**
-The API is not running. Start it with `make api` in a separate terminal.
-
-**You moved the repo, or changed `GOBIN`**
-The generated `.terraformrc` holds an absolute path. Regenerate it:
-
-```bash
-make clean dev
+main.tf                      configuration describing chapters and members
+internal/provider/           registers resources and functions with the provider
+internal/services/<name>/    the resource under implementation: schema and CRUD
+internal/dataminded_api/     supplied HTTP client
+api/                         the service the provider addresses
 ```
 
 ## Reference
 
-- [Terraform plugin framework docs](https://developer.hashicorp.com/terraform/plugin/framework)
+- [Terraform plugin framework](https://developer.hashicorp.com/terraform/plugin/framework)
 - [Provider-defined functions](https://developer.hashicorp.com/terraform/plugin/framework/functions)
 - [Acceptance testing](https://developer.hashicorp.com/terraform/plugin/testing/acceptance-tests)
-- Generated provider docs live in [`docs/`](docs/)
+- Generated provider documentation in [`docs/`](docs/)
 
-[Data Minded Academy]: https://www.dataminded.academy/
+[Dataminded Academy]: https://www.dataminded.academy/

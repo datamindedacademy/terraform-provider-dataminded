@@ -8,11 +8,11 @@
   "containerEnv": {
     "TF_CLI_CONFIG_FILE": "${containerWorkspaceFolder}/.terraformrc"
   },
-  "postCreateCommand": "make dev",
+  "postCreateCommand": "make build",
   "forwardPorts": [3000],
   "portsAttributes": {
     "3000": {
-      "label": "Data Minded API",
+      "label": "Dataminded API",
       "onAutoForward": "notify"
     }
   },

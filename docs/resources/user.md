@@ -3,12 +3,12 @@
 page_title: "dataminded_user Resource - dataminded"
 subcategory: ""
 description: |-
-  Manage Data Minded users
+  Manage Dataminded users
 ---
 
 # dataminded_user (Resource)
 
-Manage Data Minded users
+Manage Dataminded users
 
 
 

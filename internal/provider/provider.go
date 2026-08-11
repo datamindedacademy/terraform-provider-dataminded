@@ -40,11 +40,11 @@ func (p *datamindedProvider) Schema(ctx context.Context, req provider.SchemaRequ
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"host": schema.StringAttribute{
-				MarkdownDescription: "Host address where the Data Minded API runs",
+				MarkdownDescription: "Host address where the Dataminded API runs",
 				Required:            true,
 			},
 			"port": schema.Int64Attribute{
-				MarkdownDescription: "Port of the Data Minded API host",
+				MarkdownDescription: "Port of the Dataminded API host",
 				Required:            true,
 			},
 		},
