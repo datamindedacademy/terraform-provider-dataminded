@@ -52,14 +52,11 @@ Verify the configuration with `terraform plan`. Terraform reports that developme
 overrides are in effect, which is expected, then fails on the unimplemented `chapter`
 resource. That failure is the first exercise.
 
-The committed [`.terraformrc`](.terraformrc) declares a
+The committed [`.terraformrc`](.terraformrc) directs Terraform to `./bin` through a
 [`dev_overrides`](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers)
-block redirecting `hashicorp.com/dev/dataminded` to the `./bin` directory that `make build`
-writes to, in place of the registry a released provider would come from. Three consequences
-follow: Terraform must be invoked from the repository root, since that path is relative;
-`terraform init` is bypassed and no lock file is produced; and because the override
-resolves to a compiled binary rather than to source, `make build` must be re-run after each
-change.
+block, in place of the registry a released provider would come from. Consequently
+`terraform init` is bypassed, no lock file is produced, and Terraform must be invoked from
+the repository root, that path being relative.
 
 ## Exercises
 
@@ -70,8 +67,13 @@ change.
 | 3 | Provider-defined function (optional) | `chapter_config_parser`, replacing the equivalent HCL | [`internal/services/functions`](internal/services/functions/README.md) |
 
 The completed `user` resource in [`internal/services/user`](internal/services/user) is
-worth reading first, as exercises 1 and 2 follow its structure. Verify your work with
-`make testacc`, or apply it to the configuration in [`main.tf`](main.tf).
+worth reading first, as exercises 1 and 2 follow its structure.
+
+Verify your work with `make testacc`. The acceptance tests serve the provider in-process
+from source, so this is the working loop for exercises 1 and 2 and no rebuild is involved.
+Driving the configuration in [`main.tf`](main.tf) with `terraform plan` or `terraform
+apply`, as exercise 3 does, goes through the compiled binary instead and therefore wants a
+`make build` first.
 
 ## Repository structure
 
