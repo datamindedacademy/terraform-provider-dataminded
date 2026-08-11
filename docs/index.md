@@ -31,5 +31,5 @@ provider "dataminded" {
 
 ### Required
 
-- `host` (String) Host address where the Data Minded API runs
-- `port` (Number) Port of the Data Minded API host
+- `host` (String) Host address where the Dataminded API runs
+- `port` (Number) Port of the Dataminded API host

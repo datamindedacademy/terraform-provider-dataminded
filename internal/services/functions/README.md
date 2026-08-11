@@ -5,4 +5,11 @@ Instead of using HCL Kung-Fu to flatten the yaml configuration of chapters and u
 Steps to implement the provider-defined function:
 
 1. Complete the `run` method, the most important method in the `Function` interface. The function expects a yaml-formatted string, which you can parse with the [`yaml`](https://pkg.go.dev/gopkg.in/yaml.v3) package. Then write Go code that translates the parsed yaml into a Terraform `function.MapReturn` value. The keys of the map should be a unique value that identifies the `chapter_member` in your Terraform code. The value of the map should be a `types.ObjectType` with two attributes: "name" and "role", which you will use to configure the `chapter_member` resource. 
-2. Test your implementation by running `terraform plan` on the infrastructure defined in the `main.tf` file. 
+2. Swap `main.tf` over to your function. Replace the `for_each` of the `dataminded_chapter_member` resource:
+
+   ```hcl
+   for_each = provider::dataminded::chapter_config_parser(file("${path.module}/chapter_config.yaml"))
+   ```
+
+   Adjust the `chapter` and `member` arguments to match the shape your function returns, and delete the now-unused `chapter_roles` local.
+3. Test your implementation by running `terraform plan` on the infrastructure defined in the `main.tf` file. 

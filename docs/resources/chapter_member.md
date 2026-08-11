@@ -3,12 +3,12 @@
 page_title: "dataminded_chapter_member Resource - dataminded"
 subcategory: ""
 description: |-
-  Manage Data Minded chapter members
+  Manage Dataminded chapter members
 ---
 
 # dataminded_chapter_member (Resource)
 
-Manage Data Minded chapter members
+Manage Dataminded chapter members
 
 
 

@@ -33,12 +33,14 @@ resource "dataminded_user" "user" {
 }
 
 resource "dataminded_chapter" "chapter" {
-  for_each = local.chapters
+  for_each = toset(local.chapters)
   name     = each.key
 }
 
+// Exercise 3 replaces `local.chapter_roles` here with a call to your
+// provider-defined function. See internal/services/functions/README.md.
 resource "dataminded_chapter_member" "chapter_member" {
-  for_each = provider::dataminded::chapter_config_parser(file("${path.module}/chapter_config.yaml"))
+  for_each = local.chapter_roles
   chapter  = dataminded_chapter.chapter[each.value.chapter].id
   member   = dataminded_user.user[each.value.user].id
 }

@@ -19,8 +19,8 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
 
 #[derive(OpenApi)]
 #[openapi(info(
-    title = "Data Minded example API",
-    description = "Data Minded example API"
+    title = "Dataminded example API",
+    description = "Dataminded example API"
 ))]
 struct ApiDoc;
 

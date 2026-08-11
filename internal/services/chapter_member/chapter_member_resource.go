@@ -31,7 +31,7 @@ func (r *ChapterMemberResource) Metadata(_ context.Context, req resource.Metadat
 
 func (r *ChapterMemberResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manage Data Minded chapter members",
+		Description: "Manage Dataminded chapter members",
 		Attributes:  map[string]schema.Attribute{},
 	}
 }
