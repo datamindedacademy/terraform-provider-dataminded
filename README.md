@@ -2,8 +2,6 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/datamindedacademy/terraform-provider-dataminded)
 
-📚 A workshop brought to you by the [Dataminded Academy].
-
 A Terraform provider is the plugin layer that translates declarative configuration into
 API calls and reconciles the result with state. This workshop examines that layer by
 implementing one.
@@ -95,5 +93,3 @@ api/                         the service the provider addresses
 - [Provider-defined functions](https://developer.hashicorp.com/terraform/plugin/framework/functions)
 - [Acceptance testing](https://developer.hashicorp.com/terraform/plugin/testing/acceptance-tests)
 - Generated provider documentation in [`docs/`](docs/)
-
-[Dataminded Academy]: https://www.dataminded.academy/
