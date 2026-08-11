@@ -1,0 +1,27 @@
+{
+  "name": "terraform-provider-dataminded",
+  "image": "mcr.microsoft.com/devcontainers/go:1-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/terraform:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "containerEnv": {
+    "TF_CLI_CONFIG_FILE": "${containerWorkspaceFolder}/.terraformrc"
+  },
+  "postCreateCommand": "make dev",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Data Minded API",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "hashicorp.terraform"
+      ]
+    }
+  }
+}
