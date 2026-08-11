@@ -15,14 +15,18 @@ the CRUD lifecycle and the drift detection that gives `terraform plan` its meani
 attribute validation, and provider-defined functions. Each is verified through Terraform's
 acceptance testing framework.
 
-## Prerequisites
-
-Codespaces requires nothing beyond the badge above. A local setup requires
-[Go](https://go.dev/dl/) 1.25+, [Terraform](https://developer.hashicorp.com/terraform/install)
-1.8+ (provider-defined functions were introduced in 1.8), and
-[Docker](https://docs.docker.com/get-docker/) to run the API.
-
 ## Getting started
+
+Open the repository through the badge above. Codespaces compiles the provider and starts
+the API on port 3000 as a background service, so no setup is required. Proceed directly to
+`terraform plan`.
+
+<details>
+<summary><strong>Running locally instead</strong></summary>
+
+Requires [Go](https://go.dev/dl/) 1.25+,
+[Terraform](https://developer.hashicorp.com/terraform/install) 1.8+ (provider-defined
+functions were introduced in 1.8), and [Docker](https://docs.docker.com/get-docker/).
 
 Compile the provider and direct Terraform to the resulting binary:
 
@@ -31,30 +35,33 @@ make build
 export TF_CLI_CONFIG_FILE=$PWD/.terraformrc
 ```
 
-Terraform ordinarily retrieves providers from a registry. This one exists only locally, so
-the committed [`.terraformrc`](.terraformrc) declares a
-[`dev_overrides`](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers)
-block redirecting `hashicorp.com/dev/dataminded` to the `./bin` directory that `make build`
-writes to. That path is relative, so Terraform must be invoked from the repository root.
-
-Start the API in a second terminal and leave it running:
+Then start the API in a second terminal and leave it running:
 
 ```bash
 make api
 ```
 
-It listens on `http://localhost:3000` and serves interactive OpenAPI documentation for the
-endpoints under consideration; the specification itself is at `/api.json`. Should the port
-be occupied, use `make api PORT=3001` and set `port = 3001` in the `provider` block of
-`main.tf`.
+Should port 3000 be occupied, use `make api PORT=3001` and set `port = 3001` in the
+`provider` block of `main.tf`.
+
+</details>
+
+The API serves interactive OpenAPI documentation for the endpoints under consideration at
+`http://localhost:3000`; the specification itself is at `/api.json`. Use `make -C api logs`
+to inspect it while it runs in the background, and `make -C api down` to stop it.
 
 Verify the configuration with `terraform plan`. Terraform reports that development
 overrides are in effect, which is expected, then fails on the unimplemented `chapter`
 resource. That failure is the first exercise.
 
-Note that `dev_overrides` bypasses `terraform init` and produces no lock file, so
-`terraform plan` and `terraform apply` are invoked directly. Because the override resolves
-to a compiled binary rather than to source, `make build` must be re-run after each change.
+The committed [`.terraformrc`](.terraformrc) declares a
+[`dev_overrides`](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers)
+block redirecting `hashicorp.com/dev/dataminded` to the `./bin` directory that `make build`
+writes to, in place of the registry a released provider would come from. Three consequences
+follow: Terraform must be invoked from the repository root, since that path is relative;
+`terraform init` is bypassed and no lock file is produced; and because the override
+resolves to a compiled binary rather than to source, `make build` must be re-run after each
+change.
 
 ## Exercises
 

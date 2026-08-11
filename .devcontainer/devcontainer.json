@@ -8,7 +8,8 @@
   "containerEnv": {
     "TF_CLI_CONFIG_FILE": "${containerWorkspaceFolder}/.terraformrc"
   },
-  "postCreateCommand": "make build",
+  "postCreateCommand": "make build && make -C api build",
+  "postStartCommand": "make -C api up",
   "forwardPorts": [3000],
   "portsAttributes": {
     "3000": {
