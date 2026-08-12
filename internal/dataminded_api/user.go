@@ -14,7 +14,7 @@ type User struct {
 }
 
 func ListUsers(connection Connection) ([]User, error) {
-	response, err := http.Get(fmt.Sprintf("%s/user/", baseUrl(connection)))
+	response, err := http.Get(fmt.Sprintf("%s/user", baseUrl(connection)))
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func CreateUser(connection Connection, name string) (User, error) {
 	}`, name))
 
 	response, err := http.Post(
-		fmt.Sprintf("%s/user/", baseUrl(connection)),
+		fmt.Sprintf("%s/user", baseUrl(connection)),
 		"application/json",
 		bytes.NewBuffer(body),
 	)

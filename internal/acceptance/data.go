@@ -2,6 +2,8 @@ package acceptance
 
 import (
 	"math/rand"
+	"os"
+	"strconv"
 	"testing"
 )
 
@@ -24,11 +26,20 @@ type TestData struct {
 func BuildTestData(t *testing.T) TestData {
 	testData := TestData{
 		Host:          "http://localhost",
-		Port:          3000,
+		Port:          apiPort(),
 		RandomInteger: rand.Intn(1000000) + 99999,
 		RandomString:  randString(5),
 	}
 	return testData
+}
+
+// apiPort mirrors `make api PORT=...`, so that a machine with something else on
+// 3000 can run the API and the acceptance tests against the same port.
+func apiPort() int64 {
+	if p, err := strconv.ParseInt(os.Getenv("PORT"), 10, 64); err == nil {
+		return p
+	}
+	return 3000
 }
 
 // randString generates a random alphanumeric string of the length specified.
