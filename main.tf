@@ -16,14 +16,6 @@ locals {
   chapter_config = yamldecode(file("${path.module}/chapter_config.yaml"))
   chapters       = keys(local.chapter_config)
   users          = toset(flatten([for users in values(local.chapter_config) : [for user in users : user.name]]))
-  chapter_roles = merge([
-    for chapter, users in local.chapter_config : {
-      for user in users : "${chapter}-${user.name}" => {
-        user    = user.name
-        role    = try(user.role, "Contributor")
-        chapter = chapter
-      }
-  }]...) // Bleh, this is ugly... Let's use a provider-defined function instead!
 }
 
 
@@ -37,12 +29,14 @@ resource "dataminded_chapter" "chapter" {
   name     = each.key
 }
 
-// Exercise 3 replaces `local.chapter_roles` here with a call to your
-// provider-defined function. See internal/services/functions/README.md.
+// Exercise 3: the provider-defined function replaces the nested comprehension
+// that flattened chapter_config.yaml by hand. The chapter is carried in the
+// map key rather than the value, hence the split.
 resource "dataminded_chapter_member" "chapter_member" {
-  for_each = local.chapter_roles
-  chapter  = dataminded_chapter.chapter[each.value.chapter].id
-  member   = dataminded_user.user[each.value.user].id
+  for_each = provider::dataminded::chapter_config_parser(file("${path.module}/chapter_config.yaml"))
+  chapter  = dataminded_chapter.chapter[split("-", each.key)[0]].id
+  member   = dataminded_user.user[each.value.name].id
+  role     = each.value.role
 }
 
 

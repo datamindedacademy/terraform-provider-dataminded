@@ -1,5 +1,12 @@
 package chapter_member
 
+import (
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
 type ChapterMemberResourceModel struct {
-	// TODO: Define the fields of the chapter_member resource here
+	Id        types.String `tfsdk:"id"`
+	ChapterId types.Int64  `tfsdk:"chapter"`
+	UserId    types.Int64  `tfsdk:"member"`
+	Role      types.String `tfsdk:"role"`
 }

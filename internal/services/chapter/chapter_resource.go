@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -32,7 +33,16 @@ func (r *ChapterResource) Metadata(_ context.Context, req resource.MetadataReque
 func (r *ChapterResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manage Dataminded chapters",
-		Attributes:  map[string]schema.Attribute{},
+		Attributes: map[string]schema.Attribute{
+			"id": schema.Int64Attribute{
+				Computed:    true,
+				Description: "Id of the chapter in the sqlite database.",
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "Name of the chapter",
+			},
+		},
 	}
 }
 
@@ -46,7 +56,17 @@ func (r *ChapterResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	// TODO: use plan to create the chapter, and return result to the state
+	name := plan.Name.ValueString()
+
+	chapter, err := dataminded_api.CreateChapter(r.Connection, name)
+
+	if err != nil {
+		logging.AddError(ctx, "Chapter creation failed", err)
+		return
+	}
+
+	// Chapter creation successful --> Set state of computed variables (Id)
+	plan.Id = types.Int64Value(int64(chapter.Id))
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -65,8 +85,25 @@ func (r *ChapterResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if logging.HasError(ctx) {
 		return
 	}
-	// TODO: use state to read the chapter, and return result to the state.
-	// If the chapter does not exist, mark it for deletion from the state.
+
+	id := state.Id.ValueInt64()
+	chapter, err := dataminded_api.ReadChapter(r.Connection, int(id))
+
+	if err != nil {
+		logging.AddError(ctx, "Reading chapter failed", err)
+		return
+	}
+
+	// Drift detection: a chapter removed outside Terraform leaves the state, so
+	// the next plan proposes creating it again.
+	if !dataminded_api.ChapterExists(chapter) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	// Set the read values
+	// We don't have to set Id since this value was used to read
+	state.Name = types.StringValue(chapter.Name)
 
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -89,7 +126,18 @@ func (r *ChapterResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// TODO: use the plan to update the chapter
+	id := int(state.Id.ValueInt64())
+	newName := plan.Name.ValueString()
+
+	chapter, err := dataminded_api.UpdateChapter(r.Connection, id, newName)
+
+	if err != nil {
+		logging.AddError(ctx, "Updating chapter failed", err)
+		return
+	}
+
+	// The id is carried over from state: an update does not create a new row.
+	plan.Id = types.Int64Value(int64(chapter.Id))
 
 	diags := resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -109,7 +157,13 @@ func (r *ChapterResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	// TODO: use state to delete the chapter
+	id := int(state.Id.ValueInt64())
+
+	err := dataminded_api.DeleteChapter(r.Connection, id)
+
+	if err != nil {
+		logging.AddError(ctx, "Dropping chapter failed", err)
+	}
 }
 
 func (r *ChapterResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

@@ -5,7 +5,10 @@ package functions
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"gopkg.in/yaml.v2"
@@ -25,6 +28,15 @@ func (r ConfigParser) Metadata(_ context.Context, req function.MetadataRequest, 
 	resp.Name = "chapter_config_parser"
 }
 
+var roleParseResultAttrTypes = map[string]attr.Type{
+	"name": types.StringType,
+	"role": types.StringType,
+}
+
+var roleMapReturnType = types.ObjectType{
+	AttrTypes: roleParseResultAttrTypes,
+}
+
 func (r ConfigParser) Definition(_ context.Context, _ function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
 		Summary:             "Parse chapter configuration",
@@ -36,7 +48,7 @@ func (r ConfigParser) Definition(_ context.Context, _ function.DefinitionRequest
 			},
 		},
 		Return: function.MapReturn{
-			ElementType: types.StringType,
+			ElementType: roleMapReturnType,
 		},
 	}
 }
@@ -50,9 +62,45 @@ func (r ConfigParser) Run(ctx context.Context, req function.RunRequest, resp *fu
 		return
 	}
 
-	// This returns the arguments received via the req.Arguments.Get(ctx, &data) to the result. It's basically an echo function.
-	// The types defined below can help you parse a yaml file into Go objects.
-	resp.Error = function.ConcatFuncErrors(resp.Result.Set(ctx, data))
+	parsedConfig, err := parseChapterConfig(data)
+	if err != nil {
+		resp.Error = function.ConcatFuncErrors(function.NewFuncError(err.Error()))
+		return
+	}
+
+	value := make(map[string]attr.Value)
+	for chapter, members := range parsedConfig {
+		for _, member := range members {
+			// The yaml leaves role out for the common case; the resource
+			// defaults it too, but the map has to carry a concrete value.
+			if member.Role == "" {
+				member.Role = "Contributor"
+			}
+			roleValue := map[string]attr.Value{
+				"name": types.StringValue(member.Name),
+				"role": types.StringValue(member.Role),
+			}
+			val, err := types.ObjectValue(roleParseResultAttrTypes, roleValue)
+			if err != nil {
+				resp.Error = function.ConcatFuncErrors(function.FuncErrorFromDiags(ctx, err))
+				return
+			}
+
+			// The key identifies the membership, and carries the chapter that
+			// the value itself does not hold.
+			value[fmt.Sprintf("%s-%s", strings.ToLower(chapter), strings.ToLower(member.Name))] = val
+
+		}
+	}
+
+	returnValue, diag := types.MapValue(roleMapReturnType, value)
+
+	if diag.HasError() {
+		resp.Error = function.ConcatFuncErrors(function.FuncErrorFromDiags(ctx, diag))
+		return
+	}
+
+	resp.Error = function.ConcatFuncErrors(resp.Result.Set(ctx, returnValue))
 }
 
 type ChapterMember struct {
@@ -62,7 +110,7 @@ type ChapterMember struct {
 
 type ChapterConfig map[string][]ChapterMember
 
-func parseChapterConfig(data string) (ChapterConfig, error) { //nolint:unused
+func parseChapterConfig(data string) (ChapterConfig, error) {
 	var parsedConfig ChapterConfig
 
 	// Parse the data into the ChapterConfig struct
